@@ -95,6 +95,11 @@ void FireAtWillAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    
+    sampleRate = getSampleRate();
+    
+    auto pluginSettings = getPluginSettings(apvts);
+    
 }
 
 void FireAtWillAudioProcessor::releaseResources()
@@ -129,12 +134,58 @@ bool FireAtWillAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 }
 #endif
 
-void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
+                                             juce::MidiBuffer& midiMessages)
 {
+    juce::MidiBuffer fireAtWillMidiBuffer = *new juce::MidiBuffer;
+    
     juce::ScopedNoDenormals noDenormals;
+    
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
+    
+    auto bufferLengthInMs = buffer.getNumSamples() / sampleRate * 1000;
+    
+    int sampleNumber = 0;
+    
+    for (const auto metadata : midiMessages) {
+        if (metadata.getMessage().isNoteOn()) {
+            auto noteNumber = metadata.getMessage().getNoteNumber();
+            auto veolcity = metadata.getMessage().getFloatVelocity();
+            
+            // queue noteOn
+            auto onMessage =  juce::MidiMessage::noteOn(1,
+                                                      noteNumber,
+                                                      veolcity);
+            
+            sampleNumber++;
+            
+            fireAtWillMidiBuffer.addEvent(onMessage, sampleNumber);
+            
+            // queue noteOff
+            auto offMessage =  juce::MidiMessage::noteOff(1,
+                                                      noteNumber,
+                                                      veolcity);
+            
+            offMessage.setTimeStamp(metadata.getMessage().getTimeStamp());
+            offMessage.addToTimeStamp(1000);
+            sampleNumber++;
+            
+            //fireAtWillMidiBuffer.addEvent(offMessage, sampleNumber);
+        }
+    }
+    
+    // clear incoming messages - output shall be defined by the plugin only
+    midiMessages.clear();
+    
+    sampleNumber = 0;
+    
+    // push the generated MIDI messages onto the output buffer
+    for (const auto metadata : fireAtWillMidiBuffer) {
+        sampleNumber++;
+        midiMessages.addEvent(metadata.getMessage(), sampleNumber);
+    }
+    
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -142,20 +193,7 @@ void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+        buffer.clear(i, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -166,7 +204,8 @@ bool FireAtWillAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* FireAtWillAudioProcessor::createEditor()
 {
-    return new FireAtWillAudioProcessorEditor (*this);
+    //return new FireAtWillAudioProcessorEditor (*this);
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -182,6 +221,29 @@ void FireAtWillAudioProcessor::setStateInformation (const void* data, int sizeIn
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+PluginSettings getPluginSettings(juce::AudioProcessorValueTreeState& apvts) {
+    
+    PluginSettings settings;
+    
+    settings.length = apvts.getRawParameterValue("Length Percent")->load();
+    
+    return settings;
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout FireAtWillAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>("Length Percent",
+                                                         "Length Percent",
+                                                         juce::NormalisableRange<float>(1.f, 100.f, 1.f, 1),
+                                                         20.f));
+    
+    return layout;
+}
+
+
 
 //==============================================================================
 // This creates new instances of the plugin..
