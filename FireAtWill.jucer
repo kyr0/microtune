@@ -3,7 +3,8 @@
 <JUCERPROJECT id="iy1AIX" name="FireAtWill" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               cppLanguageStandard="17" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginProducesMidiOut,pluginWantsMidiIn"
-              companyName="fluctura" companyWebsite="fluctura.tech">
+              companyName="fluctura" companyWebsite="fluctura.tech" pluginCode="Fire"
+              pluginFormats="buildAU,buildAUv3,buildStandalone,buildVST3" pluginAUMainType="'aufx'">
   <MAINGROUP id="IyC8yh" name="FireAtWill">
     <GROUP id="{975FD1A0-9862-2053-5F31-AFCA995DBC42}" name="Source">
       <FILE id="GP2VRl" name="PluginProcessor.cpp" compile="1" resource="0"

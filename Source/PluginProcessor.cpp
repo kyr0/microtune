@@ -9,6 +9,12 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+namespace {
+  constexpr int kMidiControlBits = 7;
+  constexpr float kHighResolutionMax = (1 << (2 * kMidiControlBits)) - 1.0f;
+  constexpr float kControlMax = (1 << kMidiControlBits) - 1.0f;
+} // namespace
+
 //==============================================================================
 FireAtWillAudioProcessor::FireAtWillAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -137,8 +143,35 @@ bool FireAtWillAudioProcessor::isBusesLayoutSupported (const BusesLayout& layout
 void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                              juce::MidiBuffer& midiMessages)
 {
-    juce::MidiBuffer fireAtWillMidiBuffer = *new juce::MidiBuffer;
+
+    for (const auto metadata : midiMessages) {
+        
+        
+        if (metadata.getMessage().isNoteOn()) {
+            auto noteNumber = metadata.getMessage().getNoteNumber();
+            
+            auto pitchMessage = juce::MidiMessage::pitchWheel(metadata.getMessage().getChannel(), 100);
+            midiMessages.addEvent(pitchMessage, metadata.samplePosition + 1);
+        }
+        
+        if (metadata.getMessage().isPitchWheel()) {
+            // apply pitch difference value depending on the last note pressed
+            auto currentPitchValue = metadata.getMessage().getPitchWheelValue();
+            auto currentSamplePosition = metadata.samplePosition;
+            midiMessages.clear(metadata.samplePosition, 1);
+            
+            auto pitchMessage = juce::MidiMessage::pitchWheel(metadata.getMessage().getChannel(), currentPitchValue + 100);
+            midiMessages.addEvent(pitchMessage, currentSamplePosition);
+        }
+    }
+    //juce::MidiBuffer fireAtWillMidiBuffer = *new juce::MidiBuffer;
+    //juce::MidiBuffer pitchBuffer = *new juce::MidiBuffer;
     
+    // PitchWheel has a range from 0 to 16384
+    // mean +- 2 semitones by general MIDI standard
+    // temperament
+    
+    /*
     juce::ScopedNoDenormals noDenormals;
     
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -148,7 +181,23 @@ void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     int sampleNumber = 0;
     
+    // recently rememvered pitch value in Pct
+    double pitchBendPercent;
+    int pitchWheelChannel = 1;
+    int pitchWheelValue = 0;
+    
     for (const auto metadata : midiMessages) {
+        
+        if (metadata.getMessage().isPitchWheel()) {
+            pitchWheelValue = metadata.getMessage().getPitchWheelValue();
+            pitchBendPercent = pitchWheelValue / kHighResolutionMax; // 0.5 -> mid, 0 -> low, 1 -> high
+            pitchWheelChannel = metadata.getMessage().getChannel();
+            
+            auto pitchMessage = juce::MidiMessage::pitchWheel(metadata.getMessage().getChannel(), metadata.getMessage().setChannel(<#int newChannelNumber#>))
+            
+            pitchBuffer.addEvent(<#const MidiMessage &midiMessage#>, <#int sampleNumber#>)
+        }
+        
         if (metadata.getMessage().isNoteOn()) {
             auto noteNumber = metadata.getMessage().getNoteNumber();
             auto veolcity = metadata.getMessage().getFloatVelocity();
@@ -158,9 +207,14 @@ void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                                       noteNumber,
                                                       veolcity);
             
-            sampleNumber++;
             
             fireAtWillMidiBuffer.addEvent(onMessage, sampleNumber);
+            sampleNumber++;
+        }
+        
+        if (metadata.getMessage().isNoteOff()) {
+            auto noteNumber = metadata.getMessage().getNoteNumber();
+            auto veolcity = metadata.getMessage().getFloatVelocity();
             
             // queue noteOff
             auto offMessage =  juce::MidiMessage::noteOff(1,
@@ -168,10 +222,9 @@ void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                                       veolcity);
             
             offMessage.setTimeStamp(metadata.getMessage().getTimeStamp());
-            offMessage.addToTimeStamp(1000);
-            sampleNumber++;
+            fireAtWillMidiBuffer.addEvent(offMessage, sampleNumber);
             
-            //fireAtWillMidiBuffer.addEvent(offMessage, sampleNumber);
+            sampleNumber++;
         }
     }
     
@@ -180,11 +233,21 @@ void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     sampleNumber = 0;
     
+    
+    
     // push the generated MIDI messages onto the output buffer
     for (const auto metadata : fireAtWillMidiBuffer) {
         sampleNumber++;
+        
+        // FIXME: not really doing anything?
+        auto pitchWheelMessage = juce::MidiMessage::pitchWheel(metadata.getMessage().getChannel(), pitchWheelValue);
+        pitchWheelMessage.setTimeStamp(metadata.getMessage().getTimeStamp());
+        midiMessages.addEvent(pitchWheelMessage, sampleNumber);
+        
+        sampleNumber++;
         midiMessages.addEvent(metadata.getMessage(), sampleNumber);
     }
+    
     
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -194,6 +257,7 @@ void FireAtWillAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
+     */
 }
 
 //==============================================================================
@@ -204,22 +268,24 @@ bool FireAtWillAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* FireAtWillAudioProcessor::createEditor()
 {
-    //return new FireAtWillAudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new FireAtWillAudioProcessorEditor (*this);
+    //return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
 void FireAtWillAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    juce::MemoryOutputStream mos(destData, true);
+    apvts.state.writeToStream(mos);
 }
 
 void FireAtWillAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    if (tree.isValid()) {
+        apvts.replaceState(tree);
+        // TODO: update UI
+    }
 }
 
 PluginSettings getPluginSettings(juce::AudioProcessorValueTreeState& apvts) {

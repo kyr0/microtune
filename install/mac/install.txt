@@ -1,0 +1,2 @@
+Welcome to the Mac installer for Audioapp.
+Please refer to https://about:blank for latest information and documentation.

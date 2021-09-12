@@ -1,0 +1,316 @@
+
+trigger:
+  branches:
+    include:
+    - main
+  tags:
+    include:
+    - v*     # only build release tags
+pr:
+- main
+
+jobs:
+
+- job: Build
+  strategy:
+    matrix:
+      mac:
+        imageName: 'macos-10.14'
+        isMac: True
+        doUpload: True
+      win-2017:
+        imageName: 'vs2017-win2016'
+        isWindows: True
+      win-2019:
+        imageName: 'windows-2019'
+        isWindows: True
+        doUpload: True
+      lin-18:
+        imageName: 'ubuntu-18.04'
+        isLinux: True
+        doUpload: True
+      lin-20:
+        imageName: 'ubuntu-20.04'
+        isLinux: True
+
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    # submodules: recursive # can't do submodules here b'cuz depth=1 fails with Github
+
+
+  - bash: |
+      sudo apt-get update
+      sudo apt-get install -y libgtk-3-dev
+      sudo apt-get install -y libwebkit2gtk-4.0
+      sudo apt-get install -y libwebkit2gtk-4.0-dev
+      sudo apt-get install -y libcurl4-openssl-dev
+      sudo apt-get install -y alsa
+      sudp apt-get install -y alsa-tools
+      sudo apt-get install -y libasound2-dev
+      sudo apt-get install -y jack
+      sudo apt-get install -y libjack-dev
+      sudo apt-get install -y libfreetype6-dev
+      sudo apt-get install -y libxinerama-dev
+      sudo apt-get install -y libxcb-xinerama0
+      sudo apt-get install -y libxinerama1
+      sudo apt-get install -y x11proto-xinerama-dev
+      sudo apt-get install -y libxrandr-dev
+      sudo apt-get install -y libgl1-mesa-dev
+      sudo apt-get install -y libxcursor-dev 
+      sudo apt-get install -y libxcursor1 
+      sudo apt-get install -y libxcb-cursor-dev 
+      sudo apt-get install -y libxcb-cursor0
+      sudo apt-get install -y --fix-missing
+
+      apt list --installed
+
+      find /usr/include -name "asoundlib.h" -print
+    displayName: Prepare Linux Host
+    condition: variables.isLinux
+
+  - bash: |
+      set -ex
+      git submodule update --init --recursive
+    displayName: Submodule Update
+
+  - bash: |
+      export SVER=`cat VERSION`
+      export GH=`git log -1 --format=%h`
+      echo "Version ${SVER} hash ${GH}"
+      # make it available below
+      echo "##vso[task.setvariable variable=AUDIOAPP_VERSION]${SVER}"
+      echo "##vso[task.setvariable variable=GH;isOutput=true]${GH}"
+    displayName: Determine Version
+
+  #
+  #  MAC BUILD AND CREATE DMG OF FILES
+  #
+  - bash: |
+      set -ex
+      # For now we expand this out so we can swap the AUDIOAPP_IS_SYNTH flag for the AU off
+      cmake -Bbuild -GXcode -DAUDIOAPP_VERSION=${AUDIOAPP_VERSION} 
+      cmake --build build --target audioapp_VST3 --config Release | xcpretty
+      cmake --build build --target audioapp_Standalone --config Release | xcpretty
+
+      mkdir build/tmpasset
+      cp -r build/audioapp_artefacts/Release/VST3/* build/tmpasset
+      cp -r build/audioapp_artefacts/Release/Standalone/* build/tmpasset
+
+      cmake -Bbuild -DAUDIOAPP_IS_SYNTH=FALSE -DAUDIOAPP_VERSION=${AUDIOAPP_VERSION} 
+      cmake --build build --target audioapp_AU --config Release | xcpretty
+      cp -r build/audioapp_artefacts/Release/AU/* build/tmpasset
+      
+      NM=audioapp-${AUDIOAPP_VERSION}.${GH}-mac.dmg
+
+      mkdir -p build/product/
+      hdiutil create build/product/${NM} -ov -volname "Audioapp ${AUDIOAPP_VERSION}" -fs HFS+ -srcfolder build/tmpasset
+    displayName: Build Mac
+    condition: variables.isMac
+  
+  #
+  # MAC EXECUTABLE INSTALLER
+  #
+  - bash: |
+      set -ex
+      # pull the packages from build assets to save bandwidth since this is normally a bit slow from the 
+      # original site
+      wget -nv -O mac_packages https://github.com/YOUR-PACKAGE/build-assets/raw/master/packages/Packages.dmg
+      mv mac_packages $(brew --cache -s packages)
+      brew install --cask packages
+      # path needed by packagesbuild
+      PACKAGES_TARGET=build.install/mac/audioapp
+      mkdir -p ${PACKAGES_TARGET}
+      # some debugging help
+      find build/audioapp_artefacts/Release -print
+      packagesbuild --package-version ${AUDIOAPP_VERSION} "install/mac/Audioapp.pkgproj"
+      NM=audioapp-mac-installer.dmg
+      hdiutil create -volname "Audioapp ${AUDIOAPP_VERSION} Installer" -srcfolder ${PACKAGES_TARGET} -ov -fs HFS+ build/product/${NM}
+    displayName: Build Mac Installer
+    condition: and(variables.isMac, variables.doUpload)
+
+  #
+  # WIN BUILD AND CREATE ZIP OF FILES
+  #
+  - bash: |
+      set -ex
+      # 64 bit
+      cmake -Bbuild -A x64 -DAUDIOAPP_VERSION=${AUDIOAPP_VERSION}
+      cmake --build build --config Release
+      # 32 bit      
+      cmake -Bbuild32 -A Win32 -DAUDIOAPP_VERSION=${AUDIOAPP_VERSION}
+      cmake --build build32 --config Release
+      mkdir -p build/product
+      mkdir -p zip/x86
+      mkdir -p zip/x64
+      cp -r build/audioapp_artefacts/Release/VST3/* zip/x64
+      cp -r build/audioapp_artefacts/Release/Standalone/* zip/x64
+      cp -r build32/audioapp_artefacts/Release/VST3/* zip/x86
+      cp -r build32/audioapp_artefacts/Release/Standalone/* zip/x86
+      NM=audioapp-${AUDIOAPP_VERSION}.${GH}-win.zip
+      # see what we have
+      find build
+      powershell Compress-Archive -DestinationPath "build/product/${NM}" -Force -Path "zip"      
+    displayName: Build Windows
+    condition: variables.isWindows
+  #
+  # WIN SETUP
+  #
+  - bash: |
+      set -ex
+      # build the innosetup install
+      nuget install innosetup
+      mkdir -p build/product/
+      iscc //Obuild\\product //Faudioapp_windows_installer //DAUDIOAPP_VERSION=${AUDIOAPP_VERSION}.${GH} "install\\win\\install.iss"
+
+    displayName: Package Windows
+    condition: and(variables.isWindows, variables.doUpload)
+
+  #
+  # LINUX
+  #   
+  - bash: |
+      set -ex
+      cmake -Bbuild -DAUDIOAPP_VERSION=${AUDIOAPP_VERSION}
+      cmake --build build --config Release
+      LINARCH=`uname -m`
+      NM=audioapp-${AUDIOAPP_VERSION}.${GH}-linux-${LINARCH}.tgz
+      mkdir -p build/product/
+      mkdir -p build/Audioapp/Standalone
+      cp -r build/audioapp_artefacts/VST3/* build/Audioapp
+      cp -r build/audioapp_artefacts/Standalone/* build/Audioapp/Standalone      
+      tar czf "build/product/${NM}" -C build Audioapp
+    displayName: Build Linux
+    condition: variables.isLinux
+  
+  #
+  # PUBLISH ARTIFACTS
+  #
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'MACOS_BUILD'
+      targetPath: 'build/product/'
+    displayName: Publish Mac DMG
+    condition: and(variables.isMac, variables.doUpload)
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'WINDOWS_BUILD'
+      targetPath: 'build/product/'
+    displayName: Publish Windows Zip
+    condition: and(variables.isWindows, variables.doUpload)
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'LINUX_BUILD'
+      targetPath: 'build/product/'
+    displayName: Publish Linux Tar
+    condition: and(variables.isLinux, variables.doUpload)
+
+
+#
+# UPDATE GITHUB RELEASES
+#
+- job: UpdateGithubRelease
+  dependsOn: Build
+  # only publish if it was merged to main (ie not on a pr) or if a tag was pushed
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/tags/')))
+  
+  steps:
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      artifactName: 'MACOS_BUILD'
+      targetPath: $(Build.ArtifactStagingDirectory)
+
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      artifactName: 'WINDOWS_BUILD'
+      targetPath: $(Build.ArtifactStagingDirectory)
+
+  - task: DownloadPipelineArtifact@0
+    inputs:
+      artifactName: 'LINUX_BUILD'
+      targetPath: $(Build.ArtifactStagingDirectory)
+
+  - bash: |
+     scripts/release-notes.sh > $(Build.ArtifactStagingDirectory)/ReleaseNotes.md
+     ls $(Build.ArtifactStagingDirectory)
+     md5sum $(Build.ArtifactStagingDirectory)/*
+    displayName: Fake up release notes and tag release
+
+  - bash: |
+      GH=`git log -1 --format=%h`
+      DATE=$(date '+%Y-%m-%d')
+      # make it available below
+      echo "##vso[task.setvariable variable=GH]$GH"
+      echo "##vso[task.setvariable variable=BUILD_DATE;]$DATE"
+    displayName: Determine Hash
+  
+  #
+  # Developer release
+  #   
+  - task: GitHubRelease@0
+    displayName: "Create Dev Release"
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+    inputs:
+      gitHubConnection: GITHUB_CONNECTION_NAME
+      repositoryName: GIT_ORGA_OR_USER_NAME/audioapp
+      action: 'edit'
+
+      # Required when action == Create# Options: auto, manual
+      tagSource: manual
+      # we create a new tag
+      #tag: v1.0.1.$(GH)
+      tag: developer
+      title: Dev Release $(BUILD_DATE) $(GH)
+      isPreRelease: true
+      target: '$(Build.SourceVersion)'
+      addChangeLog: true
+      assetUploadMode: 'delete'
+      releaseNotesFile: $(Build.ArtifactStagingDirectory)/ReleaseNotes.md
+      assets: $(Build.ArtifactStagingDirectory)/*.*
+  
+  #
+  # STABLE RELEASE WHEN TAGGED with vX.X.X
+  #
+  - task: GitHubRelease@0
+    displayName: "Create or edit New 'Stable' Release"
+    # will only run when we tag something starting with v
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    inputs:
+      gitHubConnection: GITHUB_CONNECTION_NAME
+      repositoryName: GIT_ORGA_OR_USER_NAME/audioapp
+      action: 'edit'
+      title: Stable Release ${{ replace(variables['Build.SourceBranch'], 'refs/tags/','') }}
+      tagSource: manual
+      # extract just the tag
+      tag: ${{ replace(variables['Build.SourceBranch'], 'refs/tags/','') }}
+      target: '$(Build.SourceVersion)'
+      addChangeLog: false
+      assetUploadMode: 'delete'
+      releaseNotesFile: $(Build.ArtifactStagingDirectory)/ReleaseNotes.md
+      assets: $(Build.ArtifactStagingDirectory)/*.*
+  #
+  # PUBLISH CANONICAL WHEN RELEASE
+  #  
+  - task: GitHubRelease@0
+    displayName: "Edit canonical latest"
+    # will only run when we tag something starting with v
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+    inputs:
+      gitHubConnection: GITHUB_CONNECTION_NAME
+      repositoryName: GIT_ORGA_OR_USER_NAME/audioapp
+      action: 'edit'
+      title: Latest Stable Release
+      tagSource: manual
+      # extract just the tag
+      tag: release_dl
+      target: '$(Build.SourceVersion)'
+      addChangeLog: false
+      assetUploadMode: 'delete'
+      releaseNotesFile: $(Build.ArtifactStagingDirectory)/ReleaseNotes.md
+      assets: $(Build.ArtifactStagingDirectory)/*.*
+    

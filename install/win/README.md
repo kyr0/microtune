@@ -1,0 +1,1 @@
+Use Inno Setup https://jrsoftware.org/isinfo.php
