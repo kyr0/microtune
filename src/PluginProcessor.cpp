@@ -11,48 +11,32 @@
 #include "Constants.h"
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "BinaryData.h"
 
 AppAudioProcessor::AppAudioProcessor() :
 #ifndef JucePlugin_PreferredChannelConfigurations
-   AudioProcessor(BusesProperties().withOutput("Output", AudioChannelSet::stereo(), true))
+   MagicProcessor(BusesProperties().withOutput("Output", AudioChannelSet::stereo(), true)),
 #endif
+   parameters (*this, nullptr, juce::Identifier ("APVTSTutorial"),
+   {
+           std::make_unique<juce::AudioParameterFloat> ("gain",            // parameterID
+                                                        "Gain",            // parameter name
+                                                        0.0f,              // minimum value
+                                                        1.0f,              // maximum value
+                                                        0.5f),             // default value
+           std::make_unique<juce::AudioParameterBool> ("invertPhase",      // parameterID
+                                                       "Invert Phase",     // parameter name
+                                                       false)              // default value
+   })
 {
+    FOLEYS_SET_SOURCE_PATH (__FILE__);
+
+    phaseParameter = parameters.getRawParameterValue ("invertPhase");
+    gainParameter  = parameters.getRawParameterValue ("gain");
 }
 
 AppAudioProcessor::~AppAudioProcessor()
 {
-}
-
-const String AppAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool AppAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool AppAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool AppAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-   return true;
-   #else
-   return false;
-#endif
 }
 
 double AppAudioProcessor::getTailLengthSeconds() const
@@ -88,6 +72,8 @@ void AppAudioProcessor::prepareToPlay (double , int )
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need
+    auto phase = *phaseParameter < 0.5f ? 1.0f : -1.0f;
+    previousGain = *gainParameter * phase;
 }
 
 void AppAudioProcessor::releaseResources()
@@ -133,25 +119,13 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
    midiMessages.swapWith(processedMidi);
 }
 
-bool AppAudioProcessor::hasEditor() const
+
+juce::ValueTree AppAudioProcessor::createGuiValueTree()
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    juce::String text (BinaryData::magic_xml, BinaryData::magic_xmlSize);
+    return juce::ValueTree::fromXml (text);
 }
 
-AudioProcessorEditor* AppAudioProcessor::createEditor()
-{   
-    return new AppAudioProcessorEditor (*this);
-}
-
-/* Save the plugin state to the DAW project */
-void AppAudioProcessor::getStateInformation (MemoryBlock& block)
-{
-}
-
-/* Load the plugin state from the DAW project */
-void AppAudioProcessor::setStateInformation (const void* in , int size)
-{
-}
 
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {

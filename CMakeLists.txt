@@ -51,6 +51,7 @@ message( STATUS "Is Synth: ${AUDIOAPP_IS_SYNTH}, Is Midi Effect: ${AUDIOAPP_IS_M
 # VSTi in reaper whereas setting it to "Effect" causes it to show as VST
 set(AUDIOAPP_CATEGORY "Effect") # original was "Instrument"
 add_subdirectory(lib/JUCE)
+add_subdirectory(Resources)
 
 add_custom_target( git-info BYPRODUCTS ${CMAKE_BINARY_DIR}/geninclude/version.cpp
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -80,19 +81,22 @@ juce_add_plugin(audioapp
     BUNDLE_ID "org.example.audioapp"
     DESCRIPTION "Example audio app"
     ICON_BIG   "${CMAKE_CURRENT_SOURCE_DIR}/image/app_logo_512.png"
-    IS_SYNTH ${AUDIOAPP_IS_SYNTH}
+    IS_SYNTH FALSE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT TRUE
     IS_MIDI_EFFECT ${AUDIOAPP_IS_MIDI_EFFECT}  
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
     # COPY_PLUGIN_AFTER_BUILD TRUE/FALSE        # Should the plugin be installed to a default location after building?
-    PLUGIN_MANUFACTURER_CODE Manu               # allows compatibility with older patches from AV days
+    PLUGIN_MANUFACTURER_CODE Manu
     PLUGIN_CODE Appc
     FORMATS VST3 ${VST2} AU Standalone     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     VST3_CATEGORIES ${AUDIOAPP_CATEGORY}
+    COPY_PLUGIN_AFTER_BUILD TRUE
     USE_LEGACY_COMPATIBILITY_PLUGIN_CODE TRUE #needed to maintain plugin code compatibility with what we've released
     VST3_CAN_REPLACE_VST2 TRUE  #hopefully this will allow old projects to load
     PRODUCT_NAME "Audioapp")        # The name of the final executable, which can differ from the target name
+
+juce_add_module(${CMAKE_CURRENT_LIST_DIR}/lib/foleys_gui_magic)
 
 add_dependencies( audioapp git-info )
 include_directories( src )
@@ -115,6 +119,9 @@ target_sources(audioapp PRIVATE
 
 target_compile_definitions(audioapp
     PUBLIC
+    FOLEYS_SHOW_GUI_EDITOR_PALLETTE=1
+    FOLEYS_SAVE_EDITED_GUI_IN_PLUGIN_STATE=0
+    FOLEYS_ENABLE_BINARY_DATA=1
     # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
     JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_plugin` call
     JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_plugin` call
@@ -149,10 +156,19 @@ set_target_properties(assets PROPERTIES
 # linked automatically. If we'd generated a binary data target above, we would need to link to it
 # here too. This is a standard CMake command.
 
-target_link_libraries(audioapp PRIVATE
-  assets                             # to include our images
+target_link_libraries(audioapp
+  PRIVATE
+  BinaryData
+  assets
+  foleys_gui_magic
+  juce::juce_audio_basics
+  juce::juce_audio_processors
+  juce::juce_dsp
   juce::juce_audio_utils
   juce::juce_audio_plugin_client
+  juce::juce_gui_extra
+  juce::juce_cryptography
+  juce::juce_opengl
   )
 
 if( APPLE )
@@ -163,8 +179,10 @@ if( APPLE )
     POST_BUILD
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND echo "Installing audio unit locally"
-    COMMAND rsync -r --delete "${ZIP_FROM_DIR}/AU/Audioapp.component/" "\${HOME}/Library/Audio/Plug-Ins/Components/Audioapp.component/"
-    COMMAND auval -vt aumi AuVi
+    COMMAND COPY_PLUGIN_AFTER_BUILD "\${HOME}/Library/Audio/Plug-Ins/Components/Audioapp.component/"
+    COMMAND auval -vt aumi Manu Appc
     )
 
 endif()
+
+#target_precompile_headers(audioapp PRIVATE src/Constants.h)

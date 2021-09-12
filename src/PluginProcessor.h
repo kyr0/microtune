@@ -11,11 +11,11 @@
 #ifndef PLUGINPROCESSOR_H_INCLUDED
 #define PLUGINPROCESSOR_H_INCLUDED
 
-class AppAudioProcessor : public juce::AudioProcessor
+class AppAudioProcessor : public foleys::MagicProcessor
 {
 public:
    AppAudioProcessor();
-   ~AppAudioProcessor();
+    ~AppAudioProcessor() override;
    
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -23,20 +23,17 @@ public:
     bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
    #endif
     void processBlock (AudioSampleBuffer&, MidiBuffer&) override;
-    AudioProcessorEditor* createEditor() override;
-    bool hasEditor() const override;
-    const String getName() const override;
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool isMidiEffect() const override;
     double getTailLengthSeconds() const override;
     int getNumPrograms() override;
     int getCurrentProgram() override;
     void setCurrentProgram (int index) override;
     const String getProgramName (int index) override;
     void changeProgramName (int index, const String& newName) override;
-    void getStateInformation (MemoryBlock& destData) override;
-    void setStateInformation (const void* data, int sizeInBytes) override;
+
+    /**
+     In this override you create the GUI ValueTree either using the default or loading from the BinaryData::magic_xml
+     */
+    juce::ValueTree createGuiValueTree() override;
 
    // this is so that we can tell the host that something has changed, so that the host
    // can offer to save if the user hits exit.
@@ -44,6 +41,13 @@ public:
    AudioParameterFloat *mDummyParam;
    
 private:
+    juce::AudioProcessorValueTreeState parameters;
+
+    float previousGain; // [1]
+
+    std::atomic<float>* phaseParameter = nullptr;
+    std::atomic<float>* gainParameter  = nullptr;
+
    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AppAudioProcessor)
 };
 
