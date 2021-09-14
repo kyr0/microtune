@@ -11,7 +11,14 @@
 #ifndef PLUGINPROCESSOR_H_INCLUDED
 #define PLUGINPROCESSOR_H_INCLUDED
 
-class AppAudioProcessor : public foleys::MagicProcessor
+struct NoteMetadata {
+    int octave;
+    std::string noteName;
+    int noteNumber;
+};
+
+class AppAudioProcessor : public foleys::MagicProcessor,
+                          private juce::AudioProcessorValueTreeState::Listener
 {
 public:
    AppAudioProcessor();
@@ -29,24 +36,22 @@ public:
     void setCurrentProgram (int index) override;
     const String getProgramName (int index) override;
     void changeProgramName (int index, const String& newName) override;
+    void parameterChanged (const juce::String& parameterID, float newValue) override;
+    NoteMetadata getNoteMetadata(int midiNoteNumber);
+    int calculatePitchWheelValue(NoteMetadata& noteMetadata, int currentPitchWheelValue);
 
-    /**
-     In this override you create the GUI ValueTree either using the default or loading from the BinaryData::magic_xml
-     */
+    // In this override you create the GUI ValueTree either using the default or loading from the BinaryData::magic_xml
     juce::ValueTree createGuiValueTree() override;
 
    // this is so that we can tell the host that something has changed, so that the host
    // can offer to save if the user hits exit.
-   // audioprocessor becomes the owner of this and will delete it
+   // AudioProcessor becomes the owner of this and will delete it
    AudioParameterFloat *mDummyParam;
    
 private:
-    juce::AudioProcessorValueTreeState parameters;
+    juce::AudioProcessorValueTreeState treeState { *this, nullptr };
 
-    float previousGain; // [1]
-
-    std::atomic<float>* phaseParameter = nullptr;
-    std::atomic<float>* gainParameter  = nullptr;
+    float cCents;
 
    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AppAudioProcessor)
 };
