@@ -1,5 +1,4 @@
 # This script has been adapted from the example script that comes with JUCE in the cmake example dir.
-# Original closed-source Audioapp code used the projucer 
 #
 # To build audioapp:
 #   git submodule update --init --recursive
@@ -185,5 +184,3 @@ if( APPLE )
     )
 
 endif()
-
-#target_precompile_headers(audioapp PRIVATE src/Constants.h)

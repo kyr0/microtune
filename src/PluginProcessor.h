@@ -12,6 +12,7 @@
 #define PLUGINPROCESSOR_H_INCLUDED
 
 struct NoteMetadata {
+    bool isDefined;
     int octave;
     std::string noteName;
     int noteNumber;
@@ -52,6 +53,19 @@ private:
     juce::AudioProcessorValueTreeState treeState { *this, nullptr };
 
     float cCents;
+    float cSharpCents;
+    float dCents;
+    float dSharpCents;
+    float eCents;
+    float fCents;
+    float fSharpCents;
+    float gCents;
+    float gSharpCents;
+    float aCents;
+    float aSharpCents;
+    float bCents;
+
+    NoteMetadata currentNotePlayed;
 
    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AppAudioProcessor)
 };

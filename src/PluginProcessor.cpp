@@ -13,11 +13,45 @@
 //#include "PluginEditor.h"
 #include "BinaryData.h"
 
-namespace IDs
+const std::string WHITESPACE = " \n\r\t\f\v";
+
+// trim from end (in place)
+std::string rtrim(const std::string &s)
 {
-    // TODO: Add all other tones
+    size_t end = s.find_last_not_of(WHITESPACE);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+
+namespace ParamIDs
+{
     static juce::String cCents  { "cCents" };
     static juce::String cSharpCents    { "cSharpCents" };
+    static juce::String dCents    { "dCents" };
+    static juce::String dSharpCents    { "dSharpCents" };
+    static juce::String eCents    { "eCents" };
+    static juce::String fCents    { "fCents" };
+    static juce::String fSharpCents    { "fSharpCents" };
+    static juce::String gCents    { "gCents" };
+    static juce::String gSharpCents    { "gSharpCents" };
+    static juce::String aCents    { "aCents" };
+    static juce::String aSharpCents    { "aSharpCents" };
+    static juce::String bCents    { "bCents" };
+}
+
+namespace ToneNames
+{
+    static juce::String toneC  { "C" };
+    static juce::String toneCSharp    { "C#" };
+    static juce::String toneD    { "D" };
+    static juce::String toneDSharp    { "D#" };
+    static juce::String toneE    { "E" };
+    static juce::String toneF    { "F" };
+    static juce::String toneFSharp    { "F#" };
+    static juce::String toneG    { "G" };
+    static juce::String toneGSharp    { "G#" };
+    static juce::String toneA    { "A" };
+    static juce::String toneASharp    { "A#" };
+    static juce::String toneB    { "B" };
 }
 
 namespace {
@@ -28,21 +62,36 @@ namespace {
     constexpr float kWheelValuePerCent = kWheelMaxValue / 198;
 } // namespace
 
-juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
-{
-    juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
-    // TODO: Add all other tones
-
+void createPitchParameterForTone(const String& paramId, const String& paramName, juce::AudioProcessorValueTreeState::ParameterLayout& layout) {
     layout.add(std::make_unique<juce::AudioParameterFloat> (
-            IDs::cCents, "cCents",
+            paramId, paramName,
             juce::NormalisableRange<float> (-100, 100, 1),
             0,
             juce::String(),
             juce::AudioProcessorParameter::genericParameter,
             [](float value, int) { return juce::String (value, 0); },
-            [](juce::String text) { return text.getFloatValue(); }
+            [](const juce::String& text) { return text.getFloatValue(); }
     ));
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    // adding all parameters to the layout so that they can be set, linked to the state and automated
+    createPitchParameterForTone(ParamIDs::cCents, "C Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::cSharpCents, "C# Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::dCents, "D Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::dSharpCents, "D# Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::eCents, "E Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::fCents, "F Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::fSharpCents, "F# Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::gCents, "G Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::gSharpCents, "G# Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::aCents, "A Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::aSharpCents, "A# Tone cents", layout);
+    createPitchParameterForTone(ParamIDs::bCents, "B Tone cents", layout);
 
     return layout;
 }
@@ -53,9 +102,10 @@ NoteMetadata AppAudioProcessor::getNoteMetadata(int midiNoteNumber) {
 
     std::string notes = "C C#D D#E F F#G G#A A#B ";
 
-    noteMetadata.noteName = notes.substr((midiNoteNumber % 12) * 2, 2);
+    noteMetadata.noteName = rtrim(notes.substr((midiNoteNumber % 12) * 2, 2));
     noteMetadata.octave = midiNoteNumber / 12 - 1;
     noteMetadata.noteNumber = midiNoteNumber;
+    noteMetadata.isDefined = true;
 
     return noteMetadata;
 }
@@ -73,9 +123,19 @@ AppAudioProcessor::AppAudioProcessor() :
         if (auto* p = dynamic_cast<juce::AudioProcessorParameterWithID*>(parameter))
             treeState.addParameterListener (p->paramID, this);
 
-    // TODO: Adapt from: https://github.com/ffAudio/PluginGuiMagic/blob/main/examples/EqualizerExample/Source/PluginProcessor.cpp#L63
-
+    // setting all cent tuning values initially
     cCents = treeState.getRawParameterValue ("cCents")->load();
+    cSharpCents = treeState.getRawParameterValue ("cSharpCents")->load();
+    dCents = treeState.getRawParameterValue ("dCents")->load();
+    dSharpCents = treeState.getRawParameterValue ("dSharpCents")->load();
+    eCents = treeState.getRawParameterValue ("eCents")->load();
+    fCents = treeState.getRawParameterValue ("fCents")->load();
+    fSharpCents = treeState.getRawParameterValue ("fSharpCents")->load();
+    gCents = treeState.getRawParameterValue ("gCents")->load();
+    gSharpCents = treeState.getRawParameterValue ("gSharpCents")->load();
+    aCents = treeState.getRawParameterValue ("aCents")->load();
+    aSharpCents = treeState.getRawParameterValue ("aSharpCents")->load();
+    bCents = treeState.getRawParameterValue ("bCents")->load();
 }
 
 AppAudioProcessor::~AppAudioProcessor()
@@ -152,20 +212,68 @@ bool AppAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 
 int AppAudioProcessor::calculatePitchWheelValue(NoteMetadata& noteMetadata, int currentPitchWheelValue) {
 
-    // TODO: select the right nextWheelValue to multiply (based on noteMetadata)
-    auto nextWheelValue = currentPitchWheelValue + (cCents * kWheelValuePerCent);
+    float toneValue;
+
+    if (noteMetadata.noteName == ToneNames::toneC) {
+        toneValue = cCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneCSharp) {
+        toneValue = cSharpCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneD) {
+        toneValue = dCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneDSharp) {
+        toneValue = dSharpCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneE) {
+        toneValue = eCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneF) {
+        toneValue = fCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneFSharp) {
+        toneValue = fSharpCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneG) {
+        toneValue = gCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneGSharp) {
+        toneValue = gSharpCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneA) {
+        toneValue = aCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneASharp) {
+        toneValue = aSharpCents;
+    }
+
+    if (noteMetadata.noteName == ToneNames::toneB) {
+        toneValue = bCents;
+    }
+
+    auto nextWheelValue = (float) currentPitchWheelValue + (toneValue * kWheelValuePerCent);
 
     // hard limiting windowing for lower margin >= 0 upper margin <= 0x400
     if (nextWheelValue < 0) return 0;
     if (nextWheelValue >= 0x4000) return kWheelMaxValue;
 
-    return nextWheelValue;
+    return (int) nextWheelValue;
 }
 
 void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midiBuffer)
 {
    juce::MidiBuffer outputBuffer;
-   //juce::MidiBuffer pitchBuffer;
 
    // PitchWheel has a range from 0 to 16384
    // mean +- 2 semitones by general MIDI standard
@@ -177,18 +285,16 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
 
     int sampleNumber = 0;
 
-    // recently rememvered pitch value in Pct
-    //float pitchBendPercent;
-    //int pitchWheelChannel = 1;
     int currentPitchWheelValue = kWheelMiddlePosValue;
-    //int currentMidiNote;
 
     for (const auto midiBufferItem : midiBuffer) {
 
-        auto noteMetaData = getNoteMetadata(midiBufferItem.getMessage().getNoteNumber());
         auto midiMessage = midiBufferItem.getMessage();
 
         if (midiMessage.isNoteOn()) {
+
+            currentNotePlayed = getNoteMetadata(midiBufferItem.getMessage().getNoteNumber());
+
             auto noteNumber = midiMessage.getNoteNumber();
             auto veolcity = midiMessage.getFloatVelocity();
 
@@ -199,10 +305,10 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
 
             sampleNumber++;
 
-            auto nextPitchWheelValue = calculatePitchWheelValue(noteMetaData, currentPitchWheelValue);
+            currentPitchWheelValue = calculatePitchWheelValue(currentNotePlayed, currentPitchWheelValue);
 
             // MIDI pitch adjustment message after each noteOn to make sure the pitch microtuning is in place
-            auto pitchAdjustmentMessage = juce::MidiMessage::pitchWheel(midiMessage.getChannel(), nextPitchWheelValue);
+            auto pitchAdjustmentMessage = juce::MidiMessage::pitchWheel(midiMessage.getChannel(), currentPitchWheelValue);
             pitchAdjustmentMessage.setTimeStamp(midiMessage.getTimeStamp());
             outputBuffer.addEvent(pitchAdjustmentMessage, sampleNumber);
 
@@ -210,16 +316,20 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
         }
 
         if (midiBufferItem.getMessage().isPitchWheel()) {
-            currentPitchWheelValue = midiBufferItem.getMessage().getPitchWheelValue();
-            //pitchBendPercent = currentPitchWheelValue / kHighResolutionMax; // 0.5 -> mid, 0 -> low, 1 -> high
-            //pitchWheelChannel = midiBufferItem.getMessage().getChannel();
 
-            auto nextPitchWheelValue = calculatePitchWheelValue(noteMetaData, currentPitchWheelValue);
+            auto newPitchWheelValue = midiBufferItem.getMessage().getPitchWheelValue();
+            //pitchBendPercent = currentPitchWheelValue / kHighResolutionMax; // 0.5 -> mid, 0 -> low, 1 -> high
+            int relativePitchWheelNoteDifference = 0;
+
+            if (currentNotePlayed.isDefined) {
+                relativePitchWheelNoteDifference = calculatePitchWheelValue(currentNotePlayed, kWheelMiddlePosValue) - kWheelMiddlePosValue;
+            }
+            currentPitchWheelValue = newPitchWheelValue + relativePitchWheelNoteDifference;
 
             auto pitchMessage = juce::MidiMessage::pitchWheel(
                     midiBufferItem.getMessage().getChannel(),
                 // every pitch wheel movement must add the microtuning difference to be relatively correct
-                    nextPitchWheelValue
+                    currentPitchWheelValue
             );
             pitchMessage.setTimeStamp(midiBufferItem.getMessage().getTimeStamp());
             outputBuffer.addEvent(pitchMessage, sampleNumber);
@@ -235,6 +345,9 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
             auto offMessage =  juce::MidiMessage::noteOff(1, noteNumber, veolcity);
             offMessage.setTimeStamp(midiBufferItem.getMessage().getTimeStamp());
             outputBuffer.addEvent(offMessage, sampleNumber);
+
+            // reset pitch wheel
+            //currentPitchWheelValue = kWheelMiddlePosValue;
 
             sampleNumber++;
         }
@@ -254,11 +367,53 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
 
 void AppAudioProcessor::parameterChanged (const juce::String& paramId, float newValue)
 {
-    if (paramId == IDs::cCents) {
+    if (paramId == ParamIDs::cCents) {
         cCents = newValue;
     }
 
-    // TODO: Add all other tones
+    if (paramId == ParamIDs::cSharpCents) {
+        cSharpCents = newValue;
+    }
+
+    if (paramId == ParamIDs::dCents) {
+        dCents = newValue;
+    }
+
+    if (paramId == ParamIDs::dSharpCents) {
+        dSharpCents = newValue;
+    }
+
+    if (paramId == ParamIDs::eCents) {
+        eCents = newValue;
+    }
+
+    if (paramId == ParamIDs::fCents) {
+        fCents = newValue;
+    }
+
+    if (paramId == ParamIDs::fSharpCents) {
+        fSharpCents = newValue;
+    }
+
+    if (paramId == ParamIDs::gCents) {
+        gCents = newValue;
+    }
+
+    if (paramId == ParamIDs::gSharpCents) {
+        gSharpCents = newValue;
+    }
+
+    if (paramId == ParamIDs::aCents) {
+        aCents = newValue;
+    }
+
+    if (paramId == ParamIDs::aSharpCents) {
+        aSharpCents = newValue;
+    }
+
+    if (paramId == ParamIDs::bCents) {
+        bCents = newValue;
+    }
 }
 
 juce::ValueTree AppAudioProcessor::createGuiValueTree()

@@ -53,7 +53,7 @@
         <Slider background-color="FF000000" pos-x="-1.93798%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
-                slider-text="FFFFFFFF" parameter="cSharpCents" />
+                slider-text="FFFFFFFF"/>
         <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -65,7 +65,7 @@
         <Slider background-color="FFFFFFFF" pos-x="-0.844595%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
-                slider-text="FF000000" parameter="dCents" />
+                slider-text="FF000000"/>
         <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -77,7 +77,7 @@
         <Slider background-color="FF000000" pos-x="-1.93798%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
-                slider-text="FFFFFFFF" parameter="dSharpCents" />
+                slider-text="FFFFFFFF"/>
         <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -89,7 +89,7 @@
         <Slider background-color="FFFFFFFF" pos-x="-0.844595%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
-                slider-text="FF000000" parameter="eCents" />
+                slider-text="FF000000"/>
         <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -101,7 +101,7 @@
         <Slider background-color="FFFFFFFF" pos-x="-0.844595%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
-                slider-text="FF000000" parameter="fCents" />
+                slider-text="FF000000"/>
         <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -113,7 +113,7 @@
         <Slider background-color="FF000000" pos-x="-1.93798%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
-                slider-text="FFFFFFFF" parameter="fSharpCents" />
+                slider-text="FFFFFFFF"/>
         <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -125,7 +125,7 @@
         <Slider background-color="FFFFFFFF" pos-x="-0.844595%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
-                slider-text="FF000000" parameter="gCents" />
+                slider-text="FF000000"/>
         <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -137,7 +137,7 @@
         <Slider background-color="FF000000" pos-x="-1.93798%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
-                slider-text="FFFFFFFF" parameter="gSharpCents" />
+                slider-text="FFFFFFFF"/>
         <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -149,7 +149,7 @@
         <Slider background-color="FFFFFFFF" pos-x="-0.844595%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
-                slider-text="FF000000" parameter="aCents" />
+                slider-text="FF000000"/>
         <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -161,7 +161,7 @@
         <Slider background-color="FF000000" pos-x="-1.93798%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
-                slider-text="FFFFFFFF" parameter="aSharpCents" />
+                slider-text="FFFFFFFF"/>
         <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
                font-size="14" justification="centred" text="cents"/>
       </View>
@@ -173,7 +173,7 @@
         <Slider background-color="FFFFFFFF" pos-x="-0.844595%" pos-y="12.0755%"
                 pos-width="100%" pos-height="71.6981%" slider-type="linear-vertical"
                 min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
-                slider-text="FF000000" parameter="bCents" />
+                slider-text="FF000000"/>
         <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
                font-size="14" justification="centred" text="cents"/>
       </View>
