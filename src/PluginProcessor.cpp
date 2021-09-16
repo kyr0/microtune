@@ -12,6 +12,7 @@
 #include "PluginProcessor.h"
 //#include "PluginEditor.h"
 #include "BinaryData.h"
+#include "PresetListBox.h"
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 
@@ -136,6 +137,58 @@ AppAudioProcessor::AppAudioProcessor() :
     aCents = treeState.getRawParameterValue ("aCents")->load();
     aSharpCents = treeState.getRawParameterValue ("aSharpCents")->load();
     bCents = treeState.getRawParameterValue ("bCents")->load();
+
+    // preset handling
+
+    presetList = magicState.createAndAddObject<PresetListBox>("presets");
+    presetList->onSelectionChanged = [&](int index)
+    {
+        loadPresetInternal(index);
+        currentPresetIndexSelected = index;
+    };
+    magicState.addTrigger ("save-preset", [this]
+    {
+        savePresetInternal();
+    });
+
+    magicState.addTrigger ("remove-preset", [this]
+    {
+        removePresetInternal(currentPresetIndexSelected);
+    });
+
+    magicState.setApplicationSettingsFile (juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
+                                               .getChildFile (ProjectInfo::companyName)
+                                               .getChildFile (ProjectInfo::projectName + juce::String (".settings")));
+}
+
+void AppAudioProcessor::savePresetInternal()
+{
+    presetNode = magicState.getSettings().getOrCreateChildWithName ("presets", nullptr);
+
+    juce::ValueTree preset { "Preset" };
+    preset.setProperty ("name", "Preset " + juce::String (presetNode.getNumChildren() + 1), nullptr);
+
+    foleys::ParameterManager manager (*this);
+    manager.saveParameterValues (preset);
+
+    presetNode.appendChild (preset, nullptr);
+}
+
+void AppAudioProcessor::removePresetInternal(int index)
+{
+    presetNode = magicState.getSettings().getOrCreateChildWithName ("presets", nullptr);
+    auto preset = presetNode.getChild (index);
+
+    presetNode.removeChild(index, nullptr);
+}
+
+void AppAudioProcessor::loadPresetInternal(int index)
+{
+    presetNode = magicState.getSettings().getOrCreateChildWithName ("presets", nullptr);
+    auto preset = presetNode.getChild (index);
+
+    foleys::ParameterManager manager (*this);
+    manager.loadParameterValues (preset);
 }
 
 AppAudioProcessor::~AppAudioProcessor()
@@ -339,10 +392,10 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
 
         if (midiBufferItem.getMessage().isNoteOff()) {
             auto noteNumber = midiBufferItem.getMessage().getNoteNumber();
-            auto veolcity = midiBufferItem.getMessage().getFloatVelocity();
+            auto velocity = midiBufferItem.getMessage().getFloatVelocity();
 
             // queue noteOff
-            auto offMessage =  juce::MidiMessage::noteOff(1, noteNumber, veolcity);
+            auto offMessage =  juce::MidiMessage::noteOff(1, noteNumber, velocity);
             offMessage.setTimeStamp(midiBufferItem.getMessage().getTimeStamp());
             outputBuffer.addEvent(offMessage, sampleNumber);
 

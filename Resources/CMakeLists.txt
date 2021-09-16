@@ -1,5 +1,7 @@
 juce_add_binary_data(BinaryData SOURCES
         magic.xml
+        image/bg.jpg
+        image/microtune_logo.png
         )
 
 # Need to build BinaryData with -fPIC flag on Linux

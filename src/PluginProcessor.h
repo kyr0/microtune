@@ -18,6 +18,8 @@ struct NoteMetadata {
     int noteNumber;
 };
 
+class PresetListBox;
+
 class AppAudioProcessor : public foleys::MagicProcessor,
                           private juce::AudioProcessorValueTreeState::Listener
 {
@@ -44,6 +46,11 @@ public:
     // In this override you create the GUI ValueTree either using the default or loading from the BinaryData::magic_xml
     juce::ValueTree createGuiValueTree() override;
 
+    // === PRESETS ===
+    void savePresetInternal();
+    void loadPresetInternal(int index);
+    void removePresetInternal(int index);
+
    // this is so that we can tell the host that something has changed, so that the host
    // can offer to save if the user hits exit.
    // AudioProcessor becomes the owner of this and will delete it
@@ -51,6 +58,10 @@ public:
    
 private:
     juce::AudioProcessorValueTreeState treeState { *this, nullptr };
+
+    juce::ValueTree presetNode;
+    PresetListBox* presetList = nullptr;
+    int currentPresetIndexSelected;
 
     float cCents;
     float cSharpCents;

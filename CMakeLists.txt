@@ -79,7 +79,7 @@ juce_add_plugin(audioapp
     COMPANY_NAME "YOUR COMPANY NAME"
     BUNDLE_ID "org.example.audioapp"
     DESCRIPTION "Example audio app"
-    ICON_BIG   "${CMAKE_CURRENT_SOURCE_DIR}/image/app_logo_512.png"
+    ICON_BIG   "${CMAKE_CURRENT_SOURCE_DIR}/Resources/image/microtune_logo_square_512.png"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT TRUE
@@ -105,6 +105,7 @@ juce_generate_juce_header(audioapp)
 target_sources(audioapp PRIVATE
     src/PluginEditor.cpp
     src/PluginProcessor.cpp
+    src/PresetListBox.h
 
     ${CMAKE_BINARY_DIR}/geninclude/version.cpp
     )
