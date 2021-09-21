@@ -101,10 +101,23 @@ NoteMetadata AppAudioProcessor::getNoteMetadata(int midiNoteNumber) {
 
     NoteMetadata noteMetadata;
 
+    // raster: 2 chars per note name "C ", "C#", "D ", ...
     std::string notes = "C C#D D#E F F#G G#A A#B ";
 
+    // calculating the relative position inside an octave (e.g. 63 (MIDI note number) % 12 (tones) is 3
+    // having the distance from left (3 chars) is nice, but because every note name has 2 places like "C ",
+    // the index needs to be multiplied by 2. So rel. position for substr, which cuts a subset of a string,
+    // points to 6 for the MIDI note number 63. This actually points to the start pos of D# in the "notes" string.
+    // From there on, substr cuts the 2 places out. "D#" or "E " e.g. is now passed to rtim which cuts away
+    // whitespaces from the right, leaving us with "D#" and "E", the correctly
+    // formatted note name for a given MIDI note number.
     noteMetadata.noteName = rtrim(notes.substr((midiNoteNumber % 12) * 2, 2));
-    noteMetadata.octave = midiNoteNumber / 12 - 1;
+
+    // every octave has 12 tones, if we split the available 127 notes (0 to 127 noteNumber MIDI standard)
+    // into bunches of 12 notes (e.g. 127 / 12) we end up with the count of availanble octaves in the MIDI standard.
+    // here, we do it relatively, to find the octave, the specific key pressed, is in, shifted by 1 octave (-1) down
+    // because of modulo. The int cast makes sure, no decimal places are left over.
+    noteMetadata.octave = (int) midiNoteNumber / 12 - 1;
     noteMetadata.noteNumber = midiNoteNumber;
     noteMetadata.isDefined = true;
 
@@ -139,13 +152,15 @@ AppAudioProcessor::AppAudioProcessor() :
     bCents = treeState.getRawParameterValue ("bCents")->load();
 
     // preset handling
-
     presetList = magicState.createAndAddObject<PresetListBox>("presets");
+
     presetList->onSelectionChanged = [&](int index)
     {
         loadPresetInternal(index);
+
         currentPresetIndexSelected = index;
     };
+
     magicState.addTrigger ("save-preset", [this]
     {
         savePresetInternal();
@@ -166,7 +181,14 @@ void AppAudioProcessor::savePresetInternal()
     presetNode = magicState.getSettings().getOrCreateChildWithName ("presets", nullptr);
 
     juce::ValueTree preset { "Preset" };
-    preset.setProperty ("name", "Preset " + juce::String (presetNode.getNumChildren() + 1), nullptr);
+
+    auto name = magicState.getPropertyAsValue(":presetName").getValue().toString();
+
+    if (name == "") {
+        name = juce::String (presetNode.getNumChildren() + 1);
+    }
+
+    preset.setProperty ("name", name, nullptr);
 
     foleys::ParameterManager manager (*this);
     manager.saveParameterValues (preset);
@@ -186,6 +208,9 @@ void AppAudioProcessor::loadPresetInternal(int index)
 {
     presetNode = magicState.getSettings().getOrCreateChildWithName ("presets", nullptr);
     auto preset = presetNode.getChild (index);
+
+    // set the label value (preset name)
+    magicState.getPropertyAsValue(":presetName").setValue(preset.getProperty("name"));
 
     foleys::ParameterManager manager (*this);
     manager.loadParameterValues (preset);
@@ -347,6 +372,9 @@ void AppAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midi
         if (midiMessage.isNoteOn()) {
 
             currentNotePlayed = getNoteMetadata(midiBufferItem.getMessage().getNoteNumber());
+
+
+
 
             auto noteNumber = midiMessage.getNoteNumber();
             auto veolcity = midiMessage.getFloatVelocity();

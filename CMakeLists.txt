@@ -18,7 +18,7 @@ endif()
 set(CMAKE_OSX_DEPLOYMENT_TARGET ${AUDIOAPP_MAC_SDK_VER} CACHE STRING "Build for ${AUDIOAPP_MAC_SDK_VER}")
 
 if (NOT DEFINED AUDIOAPP_VERSION)
-  set (AUDIOAPP_VERSION 1.3.0)
+  set (AUDIOAPP_VERSION 1.3.8)
 endif()  
 
 project(Audioapp VERSION ${AUDIOAPP_VERSION})
@@ -76,9 +76,9 @@ endif()
 # Check the readme at `docs/CMake API.md` in the JUCE repo for the full list.
 
 juce_add_plugin(audioapp
-    COMPANY_NAME "YOUR COMPANY NAME"
-    BUNDLE_ID "org.example.audioapp"
-    DESCRIPTION "Example audio app"
+    COMPANY_NAME "fluctura"
+    BUNDLE_ID "tech.fluctura.microtune"
+    DESCRIPTION "Microtuning for any virtual instrument"
     ICON_BIG   "${CMAKE_CURRENT_SOURCE_DIR}/Resources/image/microtune_logo_square_512.png"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT TRUE
@@ -86,14 +86,14 @@ juce_add_plugin(audioapp
     IS_MIDI_EFFECT ${AUDIOAPP_IS_MIDI_EFFECT}  
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
     # COPY_PLUGIN_AFTER_BUILD TRUE/FALSE        # Should the plugin be installed to a default location after building?
-    PLUGIN_MANUFACTURER_CODE Manu
-    PLUGIN_CODE Appc
+    PLUGIN_MANUFACTURER_CODE F1uc
+    PLUGIN_CODE M1cr
     FORMATS VST3 ${VST2} AU Standalone     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     VST3_CATEGORIES ${AUDIOAPP_CATEGORY}
     COPY_PLUGIN_AFTER_BUILD TRUE
     USE_LEGACY_COMPATIBILITY_PLUGIN_CODE TRUE #needed to maintain plugin code compatibility with what we've released
     VST3_CAN_REPLACE_VST2 TRUE  #hopefully this will allow old projects to load
-    PRODUCT_NAME "Audioapp")        # The name of the final executable, which can differ from the target name
+    PRODUCT_NAME "Microtune")        # The name of the final executable, which can differ from the target name
 
 juce_add_module(${CMAKE_CURRENT_LIST_DIR}/lib/foleys_gui_magic)
 

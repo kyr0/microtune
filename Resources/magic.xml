@@ -21,8 +21,7 @@
     </Types>
   </Style>
   <View id="root" resizable="1" resize-corner="1" flex-direction="column"
-        padding="0" radius="0" margin="0" width="1200" height="400" min-width="1200"
-        min-height="400" background-image="bg_jpg" image-placement="fill">
+        width="1200" min-height="400" height="500" padding="0" radius="0" margin="0" background-image="bg_jpg" image-placement="fill">
     <View flex-grow="0.20" pos-x="0%" pos-y="0%" pos-width="100%" pos-height="16.4134%"
           radius="0" background-color="00FFFFFF" flex-direction="row" flex-wrap="nowrap"
           margin="0" padding="0">
@@ -34,31 +33,34 @@
               pos-y="0%" pos-width="100%" pos-height="100%"/>
       </View>
       <View flex-direction="column" margin="0" background-color="00121A22">
-        <Label justification="centred-right" text="Cent-grade microtuning for virtual instruments."
+        <Label justification="centred-right" text="Cent-grade microtuning for any virtual instrument"
                label-text="FFA5A5A5" flex-grow="0.8" padding="0" margin="0"
                font-size="14" background-color="00121A22"/>
-        <Label justification="centred-right" text="Copyright (c) 2021 by Aron Homberg."
+        <Label justification="centred-right" text="2021 by Aron Homberg" label-text="FFA5A5A5"
+               flex-grow="0.8" padding="0" margin="0" font-size="14" background-color="00121A22"/>
+        <Label justification="centred-right" text="v1.3.8 beta - GPL-3.0 licensed"
                label-text="FFA5A5A5" flex-grow="0.8" padding="0" margin="0"
-               font-size="14" background-color="00121A22"/>
-        <Label justification="centred-right" text="v. 0.1.1 beta - GPLv3 licensed."
-               label-text="FFA5A5A5" flex-grow="0.8" padding="0" margin="0"
-               font-size="14" background-color="00121A22" pos-x="-0.492611%"
-               pos-y="59.7222%" pos-width="100%" pos-height="33.3333%"/>
+               font-size="14" background-color="00121A22" pos-x="-0.478469%"
+               pos-y="58.8235%" pos-width="100%" pos-height="33.8235%"/>
       </View>
     </View>
     <View pos-x="0%" pos-y="16.4134%" pos-width="100%" pos-height="83.5866%"
           radius="0" background-color="00121A22" flex-direction="row">
       <View flex-grow="0.3" pos-x="-0.762195%" pos-y="-2.55754%" pos-width="23.0183%"
             pos-height="100%" flex-direction="column" background-color="00000000">
-        <Label max-height="30" text="Load Preset" font-size="14" background-color="FF1B2325"
+        <Label max-height="30" text="Presets" font-size="14" background-color="FF1B2325"
                margin="0" radius="5 5 0 0"/>
-        <ListBox margin="0" padding="10" list-box-model="presets" pos-x="-3.40136%"
-                 pos-y="4.96278%" pos-width="100%" pos-height="73.9454%" background-color="FF283136"
-                 radius="0"/>
+        <ListBox margin="0" padding="10" list-box-model="presets" pos-x="-3.96825%"
+                 pos-y="6.80272%" pos-width="100%" pos-height="37.0748%" background-color="FF283136"
+                 radius="8"/>
         <TextButton max-height="30" margin="0" padding="1" onClick="remove-preset"
                     text="Remove" pos-x="-5.46448%" pos-y="50.3968%" pos-width="100%"
                     pos-height="15.873%" border="0" button-color="FF410909" background-color=""
                     border-color="" min-height="30"/>
+        <Label max-height="30" text="Preset name" font-size="14" margin="0"
+               padding="0" radius="0" background-color="AA111111"/>
+        <Label max-height="30" text="" editable="1" value=":presetName" margin="2"
+               font-size="14.0" padding="0" radius="8" border="1" background-color="FF342D2D"/>
         <TextButton max-height="30" margin="0" padding="1" onClick="save-preset"
                     text="Save" pos-x="-1.89873%" pos-y="0%" pos-width="50%" pos-height="61.5385%"
                     border="0" background-color="" border-color="" button-color="FF092307"
@@ -76,7 +78,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
                   slider-text="FF000000" parameter="cCents"/>
           <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c" />
         </View>
         <View padding="5" background-color="FF000000" flex-direction="column"
               flex-grow="0.8" radius="5">
@@ -88,7 +90,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
                   slider-text="FFFFFFFF" parameter="cSharpCents"/>
           <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FFFFFFFF" flex-direction="column"
               radius="5">
@@ -100,7 +102,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
                   slider-text="FF000000" parameter="dCents"/>
           <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FF000000" flex-direction="column"
               flex-grow="0.8" radius="5">
@@ -112,7 +114,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
                   slider-text="FFFFFFFF" parameter="dSharpCents"/>
           <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FFFFFFFF" flex-direction="column"
               radius="5">
@@ -124,7 +126,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
                   slider-text="FF000000" parameter="eCents"/>
           <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FFFFFFFF" flex-direction="column"
               radius="5">
@@ -136,7 +138,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
                   slider-text="FF000000" parameter="fCents"/>
           <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FF000000" flex-direction="column"
               flex-grow="0.8" radius="5">
@@ -148,7 +150,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
                   slider-text="FFFFFFFF" parameter="fSharpCents"/>
           <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FFFFFFFF" flex-direction="column"
               radius="5">
@@ -160,7 +162,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
                   slider-text="FF000000" parameter="gCents"/>
           <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FF000000" flex-direction="column"
               flex-grow="0.8" radius="5">
@@ -172,7 +174,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
                   slider-text="FFFFFFFF" parameter="gSharpCents"/>
           <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FFFFFFFF" flex-direction="column"
               radius="5">
@@ -184,7 +186,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
                   slider-text="FF000000" parameter="aCents"/>
           <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FF000000" flex-direction="column"
               flex-grow="0.8" radius="5">
@@ -196,7 +198,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FF000000"
                   slider-text="FFFFFFFF" parameter="aSharpCents"/>
           <Label background-color="FF000000" flex-grow="0.2" label-text="FFFFFFFF"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
         <View padding="5" background-color="FFFFFFFF" flex-direction="column"
               radius="5">
@@ -208,7 +210,7 @@
                   min-value="-100" max-value="100" interval="1" slider-text-outline="FFFFFFFF"
                   slider-text="FF000000" parameter="bCents"/>
           <Label background-color="FFFFFFFF" flex-grow="0.2" label-text="FF000000"
-                 font-size="14" justification="centred" text="cents"/>
+                 font-size="14" justification="centred" text="c"/>
         </View>
       </View>
     </View>

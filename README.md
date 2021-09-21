@@ -35,7 +35,7 @@ or
 `cmake -B build [options]`
 `cmake --build build --config Release`
 
-Also add magic:
+Also add PGM (Plugin GUI Magic):
 
 `git submodule add --branch develop https://github.com/ffAudio/PluginGuiMagic lib/foleys_gui_magic`
 
@@ -46,3 +46,25 @@ Development is a lot easier with VSCode using the CMake extension. Simply point 
 
 ### XCode
 If you want to use XCode on Mac, adjust the first cmake command to `cmake -B build -GXcode` and your build directory will contain xcode assets.
+
+### License
+
+GPL-3.0 License
+
+### Contributors
+
+Microtune has been developed by me, Aron Homberg (kyr0).
+
+The project layout (template) and some code (build pipeline, CMake files) etc. is based on Stochas (https://github.com/surge-synthesizer/stochas).
+Namely:
+
+- Andrew Shakinovsky (rudeog)
+- Paul (baconpaul)
+- Maarten Kruithof (tyberion)
+
+I'm really thankful for the open source work at Stochas!
+
+Furthermore, I'd like to thank Daniel Walz (developer of Plugin GUI Magic) for his  
+support on the "The Audio Programmer" Discord server.
+
+The background image is by Max Bender, https://unsplash.com/photos/1YHXFeOYpN0

@@ -12,7 +12,7 @@
         <BUS index="0" layout="disabled"/>
       </INPUTS>
       <OUTPUTS>
-        <BUS index="0" layout="C"/>
+        <BUS index="0" layout="disabled"/>
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
@@ -34,7 +34,7 @@
   <FILTER uid="3" x="0.5" y="0.9">
     <PLUGIN name="Audio Output" descriptiveName="" format="Internal" category="I/O devices"
             manufacturer="JUCE" version="1.0" file="" uniqueId="724248cb"
-            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="1"
+            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="0"
             numOutputs="0" isShell="0" uid="724248cb"/>
     <STATE>0.</STATE>
     <LAYOUT>
@@ -75,21 +75,7 @@
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
-  <FILTER uid="6" x="0.345" y="0.35" uiLastX_Normal="-1780" uiLastY_Normal="72"
-          uiopen_Normal="1">
-    <PLUGIN name="Audioapp" format="AudioUnit" category="MidiEffects" manufacturer="YOUR COMPANY NAME"
-            version="1.3.0" file="AudioUnit:MidiEffects/aumi,Appc,Manu" uniqueId="6d64737f"
-            isInstrument="0" fileTime="0" infoUpdateTime="17bea8e4509" numInputs="0"
-            numOutputs="2" isShell="0" uid="6d64737f"/>
-    <STATE>331.hAGaoMGcv.C1AHv.DTfAGfPBJr.DQHwDTvUag4VclE1XzUmbkIGUjEFcgwUYrUVak4Fcs3VXsU1UyUmXzkGbkckckI2bo8laTQWdvU1WP7fZ0MVYPwVcmklaSQWXzUFUtEVakIQSg4VcOAAE..............P.r7bfn7C...PzLzPTxDsCODELV8TczAWczIQPvA2XP.fDgUWao8DDXMGcgQWY..P.BvVXyQWKykldkAP.BbWZjQGZ.DPAAP3....Zkk1YnQG.ATP.dE.....TAIUPMAP.BjFY.D.BEL1Pk4FcyAfcgwVckAP.IP.............VU4FcoQGakQF.H.PF.XB.q..N..D.HAPS.7E.jAPZ..H.CBPg.fH.JBPj.XI.XBPm.fO.......f.A.........PE..................P.A.</STATE>
-    <LAYOUT>
-      <INPUTS/>
-      <OUTPUTS>
-        <BUS index="0" layout="L R"/>
-      </OUTPUTS>
-    </LAYOUT>
-  </FILTER>
-  <FILTER uid="7" x="0.175" y="0.5884615384615385" uiLastX_Normal="-1312"
+  <FILTER uid="7" x="0.175" y="0.5884615384615385" uiLastX_Normal="-492"
           uiLastY_Normal="480" uiopen_Normal="1">
     <PLUGIN name="MIDI Logger" format="Internal" category="Synth" manufacturer="JUCE"
             version="1.0.0" file="MIDI Logger" uniqueId="97e2978f" isInstrument="1"
@@ -101,8 +87,22 @@
       <OUTPUTS/>
     </LAYOUT>
   </FILTER>
-  <CONNECTION srcFilter="2" srcChannel="4096" dstFilter="6" dstChannel="4096"/>
+  <FILTER uid="8" x="0.3825" y="0.3384615384615385" uiLastX_Normal="186"
+          uiLastY_Normal="340" uiopen_Normal="0">
+    <PLUGIN name="Microtune" format="AudioUnit" category="MidiEffects" manufacturer="fluctura"
+            version="1.3.3" file="AudioUnit:MidiEffects/aumi,M1cr,F1uc" uniqueId="6a757b78"
+            isInstrument="0" fileTime="0" infoUpdateTime="17c0a2dbb78" numInputs="0"
+            numOutputs="2" isShell="0" uid="6a757b78"/>
+    <STATE>874.hAGaoMGcv.C1AHv.DTfAGfPBJr.DQHwDTvUag4VclE1XzUmbkIGUjEFcgwUYrUVak4Fcs3VXsU1UyUmXzkGbkckckI2bo8laTQWdvU1WP7fZ0MVYPwVcmklaSQWXzUFUtEVakIgQwT2XOAAa...............CEbWkH+C....BaTlP+....jRYOq9O....qnApI9C....KOGHJ+....3BgYc7O....vjiLl8C...PLjqLw+....Di6KTvO....yH53j9C...fQI2Wg+.....mjievO....QyPCQISzN7PTvX0S0QGb0QmDMEyXxAA.RDVcsk1SQHfGyQWXzUF..DPCrE1bz0xbooWY.Df.2kFYzgF.ATP.vR...fVYocFZzAP.ED.jA.....UPRETS.Df.oQF.AfPAgMTYtQ2b.XWXrUWY.DPBD.............UPRETS.Df.oQF.AzPAgMEZgIGbCUlazMG.1EFa0UF.Aj.A............PEjTA0D.AHPZjAP.HTfXCUlazMG.1EFa0UF.Aj.A............PEjTA0D.AHPZjAP.HTvXCUlazMG.1EFa0UF.Aj.A............PEjTA0D.AHPZjAP.MTvXSgVXxA2Pk4FcyAfcgwVckAP.IP.............TAIUPMAP.BjFY.D.BEP1Pk4FcyAfcgwVckAP.IP.............TAIUPMAP.BjFY.DPCEP1TnElbvMTYtQ2b.XWXrUWY.DPBD.............UPRETS.Df.oQF.AfPAkMTYtQ2b.XWXrUWY.DPBD.............UPRETS.Df.oQF.AfPAlMTYtQ2b.XWXrUWY.DPBD.............UPRETS.Df.oQF.AzPAlMEZgIGbCUlazMG.1EFa0UF.Aj.A............PEjTA0D.AHPZjAP.HTvYCUlazMG.1EFa0UF.Aj.A............PEjTA0D.AHPZjAP.MTvYSgVXxA2Pk4FcyAfcgwVckAP.IP.............VU4FcoQGakQF.H.PF.XB.q..N..D.HAPS.7E.jAPZ.fM.aCP2..N.hCP5.3N.vCP8CbA.......f.A.........PE..................v.f.</STATE>
+    <LAYOUT>
+      <INPUTS/>
+      <OUTPUTS>
+        <BUS index="0" layout="L R"/>
+      </OUTPUTS>
+    </LAYOUT>
+  </FILTER>
+  <CONNECTION srcFilter="2" srcChannel="4096" dstFilter="8" dstChannel="4096"/>
   <CONNECTION srcFilter="5" srcChannel="0" dstFilter="3" dstChannel="0"/>
   <CONNECTION srcFilter="5" srcChannel="1" dstFilter="3" dstChannel="1"/>
-  <CONNECTION srcFilter="6" srcChannel="4096" dstFilter="7" dstChannel="4096"/>
+  <CONNECTION srcFilter="8" srcChannel="4096" dstFilter="7" dstChannel="4096"/>
 </FILTERGRAPH>
