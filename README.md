@@ -4,6 +4,10 @@ A MIDI FX plugin that microtunes any virtual instrument.
 
 <img src="Microtune_1_3_8.png" />
 
+## Releases
+
+See the [Releases](https://github.com/kyr0/microtune/releases) page for more info.
+
 ## Platforms and DAWs
 Should be working on Windows, Mac and Linux using Reaper, Logic, Bitwig and others.
 By default AAX is not built, but if you have the AAX sdk you will be able to enable this.
