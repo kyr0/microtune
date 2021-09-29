@@ -7,16 +7,18 @@ Should be working on Windows, Mac and Linux using Reaper, Logic, Bitwig and othe
 By default AAX is not built, but if you have the AAX sdk you will be able to enable this.
 
 ## Side-note, commercial alternative
-After implementing this project, the user EyalAmir in "The Audio Programmer" channel on Discord
-told me that he actually developed a plugin with a similar idea in mind. 
+After having the idea and implementing this project, the user EyalAmir in "The Audio Programmer" channel on Discord
+told me that there is plugin with a similar idea in mind already on the market. 
 
-So there as a commercial alternative available: [PitchInnovations OI](https://www.pitchinnovations.com/home/oi/)
+So there is a commercial alternative available already: [PitchInnovations OI / FLUiD PiTCH](https://www.pitchinnovations.com/home/oi/)
 
-I wasn't aware of that when I started implementing this plugin. 
-It's a pretty decent plugin and a good alternative if you also want additional features, like MPE support.
+I wasn't aware that this plugin already existed when I started implementing Microtune in September 2021. 
+FLUiD PiTCH from PitchInnovations is a pretty decent plugin and a good alternative to this plugin if you also 
+want additional features, like MPE support.
 
-This plugin doesn't come with MPE support: Its pitch bend modulation applies to all MIDI notes played at the same time
-and not to each single note individually. 
+Microtune doesn't come with MPE support: Its pitch bend modulation applies to all MIDI notes played at the same time
+and not to each single note individually. Therefore chord bending works with Microtune, but technically, it triggers 
+the pitch bend for all notes hold at the same time, not each single note individually.
 
 ## Intention of this project / what it does
 I've developed this project to implement an idea I head to give my digital instruments the possibility to be slightly detuned.
