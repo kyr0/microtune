@@ -6,6 +6,31 @@ A MIDI FX plugin that microtunes any virtual instrument.
 Should be working on Windows, Mac and Linux using Reaper, Logic, Bitwig and others.
 By default AAX is not built, but if you have the AAX sdk you will be able to enable this.
 
+## Side-note, commercial alternative
+After implementing this project, the user EyalAmir in "The Audio Programmer" channel on Discord
+told me that he actually developed a plugin with a similar idea in mind. 
+
+So there as a commercial alternative available: [PitchInnovations OI](https://www.pitchinnovations.com/home/oi/)
+
+I wasn't aware of that when I started implementing this plugin. 
+It's a pretty decent plugin and a good alternative if you also want additional features, like MPE support.
+
+This plugin doesn't come with MPE support: Its pitch bend modulation applies to all MIDI notes played at the same time
+and not to each single note individually. 
+
+## Intention of this project / what it does
+I've developed this project to implement an idea I head to give my digital instruments the possibility to be slightly detuned.
+Just like a natural instruments (e.g. a guitar, or piano), I wanted virtual instruments to have some kind of mechanical "string tuner".
+
+Using Microtune, you can tweak each "string" (tone) to differ from its "perfectly tuned" pitch. 
+I didn't implement "slightly off octave purity" like it can happen in string instruments like the Guitar, 
+because that is often an unwanted effect in music. However, if you like to have that, you can of course send me a PR here.
+
+I also left out any other complex feature as I built this plugin also to learn about modern C++ development
+and audio plugin development in general.
+
+This codebase might be a good starting point to implement a JUCE based plugin of any kind (using CMake and PluginGuiMagic).
+
 ## Building
 ### Pre-requisites
 - Windows, Linux, macOS based system
@@ -18,26 +43,18 @@ By default AAX is not built, but if you have the AAX sdk you will be able to ena
 ### Building
 - Install developer tool chain on your system. Windows has been tested with MS C++, Mac has been tested with Clang, Linux with GCC on Ubuntu and Buster
 - Install CMake on your system. Go to cmake.org/download
-- If you want to set a particular version add Å-DAUDIOAPP_VERSION=9.9.9 in options below otherwise the version will be 0.9.0 
+- If you want to set a particular version add -DAUDIOAPP_VERSION=9.9.9 in options below otherwise the version will be 0.9.0 
 - VST2 - if you need it you need to add -DVST2_PATH=path-to-vst2-sdk-here to options below
 - AAX - if you need it you need to install the sdk and edit the CMakefile
 - AU - if you are building the AudioUnit add the option -DAUDIOAPP_IS_SYNTH=FALSE
-- Build Audioapp:
-
+- Update the git module dependencies
 
 `git submodule update --init --recursive`
 
-or
-
-`git submodule add https://github.com/juce-framework/JUCE lib/JUCE`
-(in case you're setting up your own JUCE plugin from scratch)
+- Build (for release):
 
 `cmake -B build [options]`
 `cmake --build build --config Release`
-
-Also add PGM (Plugin GUI Magic):
-
-`git submodule add --branch develop https://github.com/ffAudio/PluginGuiMagic lib/foleys_gui_magic`
 
 ### VSCode
 Development is a lot easier with VSCode using the CMake extension. Simply point vscode at the root directory of the repo. It pretty much detects a cmake project and handles building without any issues.
@@ -68,3 +85,19 @@ Furthermore, I'd like to thank Daniel Walz (developer of Plugin GUI Magic) for h
 support on the "The Audio Programmer" Discord server.
 
 The background image is by Max Bender, https://unsplash.com/photos/1YHXFeOYpN0
+
+### In case you're using this code as a basis to your own JUCE plugin from scratch:
+
+To manage/create your own git submodule configuration, run/adapt these commands:
+`git submodule add https://github.com/juce-framework/JUCE lib/JUCE`
+
+PGM (PluginGuiMagic) can also be added as a git submodule (example here is using the `develop` branch):
+`git submodule add --branch develop https://github.com/ffAudio/PluginGuiMagic lib/foleys_gui_magic`
+
+### Commands / macOS
+
+`lipo` should print `x86_64 arm64` when running:
+`lipo -archs ~/Library/Audio/Plug-Ins/Components/Microtune.component/Contents/MacOS/Microtune`
+
+`auvaltool` should succeed when running ('AU VALIDATION SUCCEEDED.'):
+`auvaltool -v aumi Micr Fluc`

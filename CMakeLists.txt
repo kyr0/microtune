@@ -1,11 +1,16 @@
+# Copyright (C) 2021 by Aron Homberg
+# Copyright (C) 2016 by Andrew Shakinovsky
+
 # This script has been adapted from the example script that comes with JUCE in the cmake example dir.
 #
-# To build audioapp:
 #   git submodule update --init --recursive
 #   cmake -B build -DAUDIOAPP_VERSION=xxx, etc.
 #   cmake --build build  --config Release
 #
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19.8)
+
+# make sure it builds as archs arm64 for M1 and x86_64 for intel based CPUs on Mac
+set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 
 # always statically link c runtime on windows
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -85,14 +90,14 @@ juce_add_plugin(audioapp
     NEEDS_MIDI_OUTPUT TRUE
     IS_MIDI_EFFECT ${AUDIOAPP_IS_MIDI_EFFECT}  
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
-    # COPY_PLUGIN_AFTER_BUILD TRUE/FALSE        # Should the plugin be installed to a default location after building?
-    PLUGIN_MANUFACTURER_CODE F1uc
-    PLUGIN_CODE M1cr
+    PLUGIN_MANUFACTURER_CODE Fluc
+    PLUGIN_CODE Micr
     FORMATS VST3 ${VST2} AU Standalone     # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     VST3_CATEGORIES ${AUDIOAPP_CATEGORY}
+    # COPY_PLUGIN_AFTER_BUILD TRUE/FALSE        # Should the plugin be installed to a default location after building?
     COPY_PLUGIN_AFTER_BUILD TRUE
-    USE_LEGACY_COMPATIBILITY_PLUGIN_CODE TRUE #needed to maintain plugin code compatibility with what we've released
-    VST3_CAN_REPLACE_VST2 TRUE  #hopefully this will allow old projects to load
+    USE_LEGACY_COMPATIBILITY_PLUGIN_CODE FALSE # no need to maintain plugin code compatibility with what has been released before
+    VST3_CAN_REPLACE_VST2 TRUE
     PRODUCT_NAME "Microtune")        # The name of the final executable, which can differ from the target name
 
 juce_add_module(${CMAKE_CURRENT_LIST_DIR}/lib/foleys_gui_magic)
@@ -180,8 +185,8 @@ if( APPLE )
     POST_BUILD
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND echo "Installing audio unit locally"
-    COMMAND COPY_PLUGIN_AFTER_BUILD "\${HOME}/Library/Audio/Plug-Ins/Components/Audioapp.component/"
-    COMMAND auval -vt aumi Manu Appc
+    COMMAND COPY_PLUGIN_AFTER_BUILD "\${HOME}/Library/Audio/Plug-Ins/Components/Microtune.component/"
+    COMMAND auvaltool -v aumi F1uc M1cr
     )
 
 endif()
